@@ -674,5 +674,271 @@ RSpec.describe Tidied do
       end
     end
   end
+
+  context "#filter" do
+    context "integers with nils," do
+      let(:collection) { ((0..9).to_a + [nil]) }
+
+      it "with default operator and accessor, matching value" do
+        expect(Tidied.new(collection).filter(value: 7))
+          .to eq [7]
+      end
+
+      it "with default operator and accessor, non-matching value" do
+        expect(Tidied.new(collection).filter(value: 100))
+          .to eq []
+      end
+
+      it "with default accessor and > operator" do
+        expect(Tidied.new(collection).filter(operator: :>, value: 7))
+          .to eq [8, 9]
+      end
+
+      it "with default accessor and < operator" do
+        expect(Tidied.new(collection).filter(operator: :<, value: 3))
+          .to eq [0, 1, 2]
+      end
+
+      it "with default accessor and >= operator" do
+        expect(Tidied.new(collection).filter(operator: :>=, value: 7))
+          .to eq [7, 8, 9]
+      end
+
+      it "with default accessor and <= operator" do
+        expect(Tidied.new(collection).filter(operator: :<=, value: 3))
+          .to eq [0, 1, 2, 3]
+      end
+
+      it "with default accessor and odd? operator" do
+        expect(Tidied.new(collection).filter(operator: :odd?))
+          .to eq [1, 3, 5, 7, 9]
+      end
+
+      it "with default accessor and between? operator" do
+        expect(Tidied.new(collection).filter(operator: :between?, value: [3, 7]))
+          .to eq [3, 4, 5, 6, 7]
+      end
+    end
+
+    context "booleans with nils," do
+      let(:collection) { ([true, false] + [nil]) }
+
+      it "with default operator and accessor, matching value" do
+        expect(Tidied.new(collection).filter(value: true))
+          .to eq [true]
+      end
+
+      it "with default operator and accessor, non-matching value" do
+        expect(Tidied.new(collection).filter(value: 'indeterminate'))
+          .to eq []
+      end
+
+      it "with default accessor and & operator" do
+        expect(Tidied.new(collection).filter(operator: :&, value: false))
+          .to eq []
+      end
+
+      it "with default accessor and | operator" do
+        expect(Tidied.new(collection).filter(operator: :|, value: false))
+          .to eq [true]
+      end
+    end
+
+    context "time objects with nils," do
+      let(:t_2000_01_01_01_01_01) { Time.new(2000, 01, 01, 01, 01, 01) }
+      let(:t_2000_01_01_01_01_02) { Time.new(2000, 01, 01, 01, 01, 02) }
+      let(:t_2000_01_01_01_02_01) { Time.new(2000, 01, 01, 01, 02, 01) }
+      let(:t_2000_01_01_02_01_01) { Time.new(2000, 01, 01, 02, 01, 01) }
+      let(:t_2000_01_02_01_01_01) { Time.new(2000, 01, 02, 01, 01, 01) }
+      let(:t_2000_02_01_01_01_01) { Time.new(2000, 02, 01, 01, 01, 01) }
+      let(:t_2001_01_01_01_01_01) { Time.new(2001, 01, 01, 01, 01, 01) }
+      let(:collection) { ([t_2000_01_01_01_01_01, t_2000_01_01_01_01_02, t_2000_01_01_01_02_01, t_2000_01_01_02_01_01, t_2000_01_02_01_01_01, t_2000_02_01_01_01_01, t_2001_01_01_01_01_01] + [nil]) }
+
+      it "with default operator and accessor, matching value" do
+        expect(Tidied.new(collection).filter(value: Time.new(2000, 01, 01, 01, 01, 01)))
+          .to eq [t_2000_01_01_01_01_01]
+      end
+
+      it "with default operator and accessor, non-matching value" do
+        expect(Tidied.new(collection).filter(value: Time.new(3000, 10, 10, 10, 10, 10)))
+          .to eq []
+      end
+
+      it "with default accessor and > operator" do
+        expect(Tidied.new(collection).filter(operator: :>, value: Time.new(2000, 01, 01, 01, 02, 01)))
+          .to eq [t_2000_01_01_02_01_01, t_2000_01_02_01_01_01, t_2000_02_01_01_01_01, t_2001_01_01_01_01_01]
+      end
+
+      it "with default accessor and < operator" do
+        expect(Tidied.new(collection).filter(operator: :<, value: Time.new(2000, 01, 01, 01, 02, 01)))
+          .to eq [t_2000_01_01_01_01_01, t_2000_01_01_01_01_02]
+      end
+
+      it "with default accessor and >= operator" do
+        expect(Tidied.new(collection).filter(operator: :>=, value: Time.new(2000, 01, 01, 01, 02, 01)))
+          .to eq [t_2000_01_01_01_02_01, t_2000_01_01_02_01_01, t_2000_01_02_01_01_01, t_2000_02_01_01_01_01, t_2001_01_01_01_01_01]
+      end
+
+      it "with default accessor and <= operator" do
+        expect(Tidied.new(collection).filter(operator: :<=, value: Time.new(2000, 01, 01, 01, 02, 01)))
+          .to eq [t_2000_01_01_01_01_01, t_2000_01_01_01_01_02, t_2000_01_01_01_02_01]
+      end
+
+      it "with default accessor and monday? operator" do
+        expect(Tidied.new(collection).filter(operator: :monday?))
+          .to eq [t_2001_01_01_01_01_01]
+      end
+
+      it "with default accessor and between? operator" do
+        expect(Tidied.new(collection).filter(operator: :between?, value: [Time.new(2000, 01, 01, 01, 02, 01), Time.new(2000, 01, 02, 01, 01, 01)]))
+          .to eq [t_2000_01_01_01_02_01, t_2000_01_01_02_01_01, t_2000_01_02_01_01_01]
+      end
+    end
+
+    context "date objects with nils," do
+      let(:d_2000_01_01) { Date.new(2000, 01, 01) }
+      let(:d_2000_01_02) { Date.new(2000, 01, 02) }
+      let(:d_2000_02_01) { Date.new(2000, 02, 01) }
+      let(:d_2001_01_01) { Date.new(2001, 01, 01) }
+      let(:collection) { ([d_2000_01_01, d_2000_01_02, d_2000_02_01, d_2001_01_01] + [nil]) }
+
+      it "with default operator and accessor, matching value" do
+        expect(Tidied.new(collection).filter(value: Date.new(2000, 01, 01)))
+          .to eq [d_2000_01_01]
+      end
+
+      it "with default operator and accessor, non-matching value" do
+        expect(Tidied.new(collection).filter(value: Date.new(3000, 10, 10)))
+          .to eq []
+      end
+
+      it "with default accessor and > operator" do
+        expect(Tidied.new(collection).filter(operator: :>, value: Date.new(2000, 01, 02)))
+          .to eq [d_2000_02_01, d_2001_01_01]
+      end
+
+      it "with default accessor and < operator" do
+        expect(Tidied.new(collection).filter(operator: :<, value: Date.new(2000, 01, 02)))
+          .to eq [d_2000_01_01]
+      end
+
+      it "with default accessor and >= operator" do
+        expect(Tidied.new(collection).filter(operator: :>=, value: Date.new(2000, 01, 02)))
+          .to eq [d_2000_01_02, d_2000_02_01, d_2001_01_01]
+      end
+
+      it "with default accessor and <= operator" do
+        expect(Tidied.new(collection).filter(operator: :<=, value: Date.new(2000, 01, 02)))
+          .to eq [d_2000_01_01, d_2000_01_02]
+      end
+
+      it "with default accessor and monday? operator" do
+        expect(Tidied.new(collection).filter(operator: :monday?))
+          .to eq [d_2001_01_01]
+      end
+
+      it "with default accessor and between? operator" do
+        expect(Tidied.new(collection).filter(operator: :between?, value: [Date.new(2000, 01, 01), Date.new(2000, 02, 01)]))
+          .to eq [d_2000_01_01, d_2000_01_02, d_2000_02_01]
+      end
+    end
+
+    context "strings with nils," do
+      let(:collection) { (%w[a n z A N Z] + [nil]) }
+
+      it "with default operator and accessor, matching value" do
+        expect(Tidied.new(collection).filter(value: "A"))
+          .to eq ["A"]
+      end
+
+      it "with default operator and accessor, non-matching value" do
+        expect(Tidied.new(collection).filter(value: "M"))
+          .to eq []
+      end
+
+      it "with default accessor and > operator" do
+        expect(Tidied.new(collection).filter(operator: :>, value: "n"))
+          .to eq ["z"]
+      end
+
+      it "with default accessor and < operator" do
+        expect(Tidied.new(collection).filter(operator: :<, value: "n"))
+          .to eq ["a", "A", "N", "Z"]
+      end
+
+      it "with default accessor and >= operator" do
+        expect(Tidied.new(collection).filter(operator: :>=, value: "N"))
+          .to eq  ["a", "n", "z", "N", "Z"]
+      end
+
+      it "with default accessor and <= operator" do
+        expect(Tidied.new(collection).filter(operator: :<=, value: "N"))
+          .to eq ["A", "N"]
+      end
+
+      it "with default accessor and ascii_only? operator" do
+        expect(Tidied.new(collection).filter(operator: :ascii_only?))
+          .to eq ["a", "n", "z", "A", "N", "Z"]
+      end
+
+      it "with default accessor and match? operator" do
+        expect(Tidied.new(collection).filter(operator: :match?, value: /^[a-z]+$/))
+          .to eq ["a", "n", "z"]
+      end
+
+      it "with default accessor and between? operator" do
+        expect(Tidied.new(collection).filter(operator: :between?, value: ["A", "Z"]))
+          .to eq ["A", "N", "Z"]
+      end
+    end
+
+    context "strings case-insensitively with nils," do
+      let(:collection) { (%w[a n z A N Z] + [nil]) }
+
+      it "with default operator and accessor, matching value" do
+        expect(Tidied.new(collection).filter(value: "A", case_sensitive: false))
+          .to eq ["a", "A"]
+      end
+
+      it "with default operator and accessor, non-matching value" do
+        expect(Tidied.new(collection).filter(value: "M", case_sensitive: false))
+          .to eq []
+      end
+
+      it "with default accessor and > operator" do
+        expect(Tidied.new(collection).filter(operator: :>, value: "n", case_sensitive: false))
+          .to eq ["z", "Z"]
+      end
+
+      it "with default accessor and < operator" do
+        expect(Tidied.new(collection).filter(operator: :<, value: "n", case_sensitive: false))
+          .to eq ["a", "A"]
+      end
+
+      it "with default accessor and >= operator" do
+        expect(Tidied.new(collection).filter(operator: :>=, value: "N", case_sensitive: false))
+          .to eq  ["n", "z", "N", "Z"]
+      end
+
+      it "with default accessor and <= operator" do
+        expect(Tidied.new(collection).filter(operator: :<=, value: "N", case_sensitive: false))
+          .to eq ["a", "n", "A", "N"]
+      end
+
+      it "with default accessor and ascii_only? operator" do
+        expect(Tidied.new(collection).filter(operator: :ascii_only?, case_sensitive: false))
+          .to eq ["a", "n", "z", "A", "N", "Z"]
+      end
+
+      it "with default accessor and match? operator" do
+        expect(Tidied.new(collection).filter(operator: :match?, value: /^[a-z]+$/, case_sensitive: false))
+          .to eq ["a", "n", "z", "A", "N", "Z"]
+      end
+
+      it "with default accessor and between? operator" do
+        expect(Tidied.new(collection).filter(operator: :between?, value: ["A", "Z"], case_sensitive: false))
+          .to eq ["a", "n", "z", "A", "N", "Z"]
+      end
+    end
   end
 end
